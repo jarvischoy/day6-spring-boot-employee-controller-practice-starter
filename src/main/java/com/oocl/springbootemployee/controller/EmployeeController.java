@@ -12,7 +12,7 @@ import java.util.List;
 @RequestMapping("/employees")
 public class EmployeeController {
 
-//    @Autowired
+    //    @Autowired
     private EmployeeRepository employeeRepository;
 
     public EmployeeController(EmployeeRepository employeeRepository) {
@@ -36,12 +36,12 @@ public class EmployeeController {
 
     @PostMapping()
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Employee addEmployee(@RequestBody Employee employee){
+    public Employee addEmployee(@RequestBody Employee employee) {
         return employeeRepository.addEmployee(employee);
     }
 
     @PutMapping(path = "/{id}")
-    public Employee updateEmployee(@PathVariable Long id, @RequestBody Employee employee){
+    public Employee updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
         return employeeRepository.updateEmployee(id, employee);
     }
 
@@ -50,5 +50,12 @@ public class EmployeeController {
     public void deleteEmployee(@PathVariable Long id) {
         employeeRepository.deleteEmployeeById(id);
     }
+
+    @GetMapping(params = {"pageNumber", "pageSize"})
+    @ResponseStatus(HttpStatus.OK)
+    public List<Employee> getByPage(@RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize) {
+        return employeeRepository.findEmployeesByPage(pageNumber, pageSize);
+    }
+
 
 }

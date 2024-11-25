@@ -73,4 +73,11 @@ public class EmployeeRepository {
         Employee targetEmployee = getEmployeeById(id);
         employees.remove(targetEmployee);
     }
+
+    public List<Employee> findEmployeesByPage(int pageNumber, int pageSize) {
+        return employees.stream()
+                .skip((long) (pageNumber - 1) * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+    }
 }

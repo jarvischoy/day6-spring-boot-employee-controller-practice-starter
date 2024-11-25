@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -136,7 +137,23 @@ public class EmployeeControllerTest {
                 // Then
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
-    
+
+    @Test
+    void should_return_employee_when_perform_get_given_page_number_and_size() throws Exception {
+        // Given
+        List<Employee> targetEmployee = new ArrayList<>();
+        targetEmployee.add(new Employee(3L, "Lily", 22, Gender.FEMALE, 2800));
+        targetEmployee.add(new Employee(4L, "Alice", 25, Gender.FEMALE, 3800));
+        // When
+        client.perform(MockMvcRequestBuilders.get("/employees")
+                .param("pageNumber", "2")
+                .param("pageSize", "2"))
+                // Then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(2)))
+                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(targetEmployee)))
+        ;
+    }
 
 
 }
