@@ -90,14 +90,14 @@ public class EmployeeControllerTest {
 
     @Test
     void should_create_employee_when_create_employee_given_json() throws Exception {
-        // given
+        // Given
         Employee newEmployee = new Employee(null, "Lulu", 23, Gender.FEMALE, 4000);
 
-        //when
+        // When
         client.perform(MockMvcRequestBuilders.post("/employees")
                         .content(objectMapper.writeValueAsString(newEmployee))
                         .contentType(MediaType.APPLICATION_JSON))
-                //then
+                // Then
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Lulu"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(23))
@@ -112,14 +112,14 @@ public class EmployeeControllerTest {
 
     @Test
     void should_update_employee_when_update_given_id() throws Exception {
-        // given
+        // Given
         Employee updatedEmployee = new Employee(1L, "Lucy", 21, Gender.FEMALE, 8000);
 
-        //when
+        // When
         client.perform(MockMvcRequestBuilders.put("/employees/1")
                         .content(objectMapper.writeValueAsString(updatedEmployee))
                         .contentType(MediaType.APPLICATION_JSON))
-                //then
+                // Then
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Lucy"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(21))
@@ -127,6 +127,16 @@ public class EmployeeControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000));
 
     }
+
+    @Test
+    void should_return_204_when_perform_delete_given_employee_id() throws Exception {
+        // Given
+        // When
+        client.perform(MockMvcRequestBuilders.delete("/employees/1"))
+                // Then
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+    }
+    
 
 
 }

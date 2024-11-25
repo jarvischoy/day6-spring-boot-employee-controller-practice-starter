@@ -14,12 +14,12 @@ public class EmployeeRepository {
 
     private List<Employee> employees = new ArrayList<>();
 
-    public EmployeeRepository(){
+    public EmployeeRepository() {
         this.employees = new ArrayList<>();
         init();
     }
 
-    public void reset(){
+    public void reset() {
         employees.clear();
         init();
     }
@@ -30,7 +30,6 @@ public class EmployeeRepository {
         employees.add(new Employee(3L, "Lily", 22, Gender.FEMALE, 2800));
         employees.add(new Employee(4L, "Alice", 25, Gender.FEMALE, 3800));
     }
-
 
     public List<Employee> getAllEmployees() {
         return employees;
@@ -62,7 +61,6 @@ public class EmployeeRepository {
                 .orElse(0) + 1;
     }
 
-
     public Employee updateEmployee(Long id, Employee employee) {
         Employee targetEmployee = getEmployeeById(id);
         targetEmployee.setAge(employee.getAge());
@@ -71,5 +69,8 @@ public class EmployeeRepository {
 
     }
 
-
+    public void deleteEmployeeById(Long id) {
+        Employee targetEmployee = getEmployeeById(id);
+        employees.remove(targetEmployee);
+    }
 }
