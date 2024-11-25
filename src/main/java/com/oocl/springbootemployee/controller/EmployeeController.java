@@ -1,11 +1,8 @@
 package com.oocl.springbootemployee.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.oocl.springbootemployee.dto.UpdateEmployeeDto;
 import com.oocl.springbootemployee.model.Employee;
 import com.oocl.springbootemployee.model.Gender;
 import com.oocl.springbootemployee.repository.EmployeeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,17 +21,17 @@ public class EmployeeController {
 
     @GetMapping()
     public List<Employee> getEmployees() {
-        return employeeRepository.getEmployees();
+        return employeeRepository.getAllEmployees();
     }
 
     @PostMapping(path = "/{id}")
-    public Employee getEmployeeById(@PathVariable int id) {
-        return employeeRepository.getById(id);
+    public Employee getEmployeeById(@PathVariable Long id) {
+        return employeeRepository.getEmployeeById(id);
     }
 
     @GetMapping(params = "gender")
     public List<Employee> getEmployeesByGender(@RequestParam Gender gender) {
-        return employeeRepository.getByGender(gender);
+        return employeeRepository.getEmployeeByGender(gender);
     }
 
     @PostMapping()
@@ -44,7 +41,7 @@ public class EmployeeController {
     }
 
     @PutMapping(path = "/{id}")
-    public Employee updateEmployee(@PathVariable int id, @RequestBody UpdateEmployeeDto updateEmployeeDto){
-        return employeeRepository.updateEmployee(id, updateEmployeeDto.getAge(), updateEmployeeDto.getSalary());
+    public Employee updateEmployee(@PathVariable Long id, @RequestBody Employee employee){
+        return employeeRepository.updateEmployee(id, employee);
     }
 }

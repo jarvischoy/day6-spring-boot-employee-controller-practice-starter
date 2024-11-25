@@ -1,5 +1,6 @@
 package com.oocl.springbootemployee;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oocl.springbootemployee.model.Employee;
 import com.oocl.springbootemployee.model.Gender;
 import com.oocl.springbootemployee.repository.EmployeeRepository;
@@ -17,14 +18,15 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureJsonTesters
 public class EmployeeControllerTest {
-    final EmployeeRepository employeeRepository = new EmployeeRepository();
+    @Autowired
+    EmployeeRepository employeeRepository;
 
     @Autowired
     private MockMvc client;
@@ -35,26 +37,26 @@ public class EmployeeControllerTest {
     @Autowired
     private JacksonTester<List<Employee>> jsonList;
 
-//    @BeforeEach
-//    void setUp() {
-//        employeeRepository.getEmployees().clear();
-//        employeeRepository.addEmployee(new Employee(1, "Sam1", 20, Gender.Male, 2000));
-//        employeeRepository.addEmployee(new Employee(2, "Sam2", 20, Gender.Male, 2000));
-//        employeeRepository.addEmployee(new Employee(3, "Sam3", 20, Gender.Female, 2000));
-//    }
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setup() {
+        employeeRepository.reset();
+    }
 
     @Test
     void should_return_employees_when_get_employees() throws Exception {
         // Given
-        List<Employee> employees = employeeRepository.getEmployees();
+        List<Employee> employees = employeeRepository.getAllEmployees();
 
         String jsonContent = jsonList.write(employees).getJson();
 
         // When
         client.perform(MockMvcRequestBuilders.get("/employees"))
+                // Then
                 .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(4)))
                 .andExpect(MockMvcResultMatchers.content().json(jsonContent));
-        // Then
     }
 
     @Test
@@ -63,95 +65,67 @@ public class EmployeeControllerTest {
 
         // When
         client.perform(MockMvcRequestBuilders.post("/employees/1"))
+                // Then
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(employeeRepository.getById(1).getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(employeeRepository.getById(1).getName()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(employeeRepository.getById(1).getAge()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(employeeRepository.getById(1).getGender().name()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(employeeRepository.getById(1).getSalary()));
-
-        // Then
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Lucy"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(20))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.FEMALE.name()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000));
     }
 
     @Test
-    void should_serialize_employee_to_json() throws Exception {
+    void should_return_male_employee_when_get_employees_given_gender() throws Exception {
         // Given
-        Employee employee = new Employee(1, "Sam1", 20, Gender.Male, 2000);
+        List<Employee> employees = employeeRepository.getEmployeeByGender(Gender.MALE);
 
         // When
-        String jsonContent = json.write(employee).getJson();
-
-        // Then
-        client.perform(MockMvcRequestBuilders.post("/employees/1"))
+        client.perform(MockMvcRequestBuilders.get("/employees")
+                        .param("gender", "MALE"))
+                // Then
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().json(jsonContent));
-    }
-
-    @Test
-    void should_return_employee_when_get_employees_given_gender() throws Exception {
-        // Given
-        List<Employee> employees = employeeRepository.getByGender(Gender.Male);
-
-        // When
-        String response = client.perform(MockMvcRequestBuilders.get("/employees")
-                        .param("gender", "Male"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(2)))
-                .andReturn().getResponse().getContentAsString();
-
-        // Then
-        List<Employee> actualResponse = jsonList.parse(response).getObject();
-        assertThat(employees).usingRecursiveComparison().isEqualTo(actualResponse);
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$..gender").value(everyItem(is(Gender.MALE.name()))));
 
     }
 
     @Test
     void should_create_employee_when_create_employee_given_json() throws Exception {
-        // Given
-        String employeeJson = "{\n" +
-                "        \"name\": \"Tony\",\n" +
-                "        \"age\": 20,\n" +
-                "        \"gender\": \"Male\",\n" +
-                "        \"salary\": 2000.0\n" +
-                "    }";
+        // given
+        Employee newEmployee = new Employee(null, "Lulu", 23, Gender.FEMALE, 4000);
 
-        // When
+        //when
         client.perform(MockMvcRequestBuilders.post("/employees")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(employeeJson))
+                        .content(objectMapper.writeValueAsString(newEmployee))
+                        .contentType(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Tony"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(20))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.Male.name()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(2000.0));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Lulu"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(23))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.FEMALE.name()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(4000))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty());
 
-        // Then
+        List<Employee> employeesAfterDeletion = employeeRepository.getAllEmployees();
+        assertEquals(5, employeesAfterDeletion.size());
+
     }
 
     @Test
     void should_update_employee_when_update_given_id() throws Exception {
+        // given
+        Employee updatedEmployee = new Employee(1L, "Lucy", 21, Gender.FEMALE, 8000);
 
-
-        // Given
-        String requestBody = "    {\n" +
-                "        \"age\": 21,\n" +
-                "        \"salary\": 8000.0\n" +
-                "    }";
-
-        // When
-        client.perform(MockMvcRequestBuilders.put("/employees/{id}", "1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        //when
+        client.perform(MockMvcRequestBuilders.put("/employees/1")
+                        .content(objectMapper.writeValueAsString(updatedEmployee))
+                        .contentType(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Sam1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Lucy"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(21))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.Male.name()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000.0));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.FEMALE.name()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000));
 
-
-        // Then
     }
 
 

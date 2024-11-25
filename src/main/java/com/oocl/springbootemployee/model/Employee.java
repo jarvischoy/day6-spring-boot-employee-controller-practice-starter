@@ -1,8 +1,10 @@
 package com.oocl.springbootemployee.model;
 
-public class Employee {
+import java.io.Serializable;
 
-    private int id;
+public class Employee implements Serializable {
+
+    private Long id;
 
     private String name;
 
@@ -12,7 +14,7 @@ public class Employee {
 
     private double salary;
 
-    public Employee(int id, String name, int age, Gender gender, double salary) {
+    public Employee(Long id, String name, int age, Gender gender, double salary) {
         this.id = id;
         this.name = name;
         this.age = age;
@@ -20,28 +22,24 @@ public class Employee {
         this.salary = salary;
     }
 
-    public void setSalary(double salary) {
-        this.salary = salary;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public int getId() {
+    public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public int getAge() {
         return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 
     public Gender getGender() {
@@ -50,5 +48,9 @@ public class Employee {
 
     public double getSalary() {
         return salary;
+    }
+
+    public void setSalary(double salary) {
+        this.salary = salary;
     }
 }
