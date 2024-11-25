@@ -20,6 +20,14 @@ public class Employee {
         this.salary = salary;
     }
 
+    public void setSalary(double salary) {
+        this.salary = salary;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
     public int getId() {
         return id;
     }

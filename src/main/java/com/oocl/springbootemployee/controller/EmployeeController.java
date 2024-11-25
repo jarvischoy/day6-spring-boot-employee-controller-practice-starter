@@ -1,5 +1,7 @@
 package com.oocl.springbootemployee.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oocl.springbootemployee.dto.UpdateEmployeeDto;
 import com.oocl.springbootemployee.model.Employee;
 import com.oocl.springbootemployee.model.Gender;
 import com.oocl.springbootemployee.repository.EmployeeRepository;
@@ -39,5 +41,10 @@ public class EmployeeController {
     @ResponseStatus(code = HttpStatus.CREATED)
     public Employee addEmployee(@RequestBody Employee employee){
         return employeeRepository.addEmployee(employee);
+    }
+
+    @PutMapping(path = "/{id}")
+    public Employee updateEmployee(@PathVariable int id, @RequestBody UpdateEmployeeDto updateEmployeeDto){
+        return employeeRepository.updateEmployee(id, updateEmployeeDto.getAge(), updateEmployeeDto.getSalary());
     }
 }

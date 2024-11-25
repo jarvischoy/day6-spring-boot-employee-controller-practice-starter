@@ -3,6 +3,7 @@ package com.oocl.springbootemployee;
 import com.oocl.springbootemployee.model.Employee;
 import com.oocl.springbootemployee.model.Gender;
 import com.oocl.springbootemployee.repository.EmployeeRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 @SpringBootTest
@@ -32,6 +34,14 @@ public class EmployeeControllerTest {
 
     @Autowired
     private JacksonTester<List<Employee>> jsonList;
+
+//    @BeforeEach
+//    void setUp() {
+//        employeeRepository.getEmployees().clear();
+//        employeeRepository.addEmployee(new Employee(1, "Sam1", 20, Gender.Male, 2000));
+//        employeeRepository.addEmployee(new Employee(2, "Sam2", 20, Gender.Male, 2000));
+//        employeeRepository.addEmployee(new Employee(3, "Sam3", 20, Gender.Female, 2000));
+//    }
 
     @Test
     void should_return_employees_when_get_employees() throws Exception {
@@ -80,14 +90,19 @@ public class EmployeeControllerTest {
     @Test
     void should_return_employee_when_get_employees_given_gender() throws Exception {
         // Given
+        List<Employee> employees = employeeRepository.getByGender(Gender.Male);
 
         // When
-        client.perform(MockMvcRequestBuilders.get("/employees")
+        String response = client.perform(MockMvcRequestBuilders.get("/employees")
                         .param("gender", "Male"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$",hasSize(2)));
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(2)))
+                .andReturn().getResponse().getContentAsString();
 
         // Then
+        List<Employee> actualResponse = jsonList.parse(response).getObject();
+        assertThat(employees).usingRecursiveComparison().isEqualTo(actualResponse);
+
     }
 
     @Test
@@ -100,8 +115,6 @@ public class EmployeeControllerTest {
                 "        \"salary\": 2000.0\n" +
                 "    }";
 
-
-
         // When
         client.perform(MockMvcRequestBuilders.post("/employees")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,6 +125,31 @@ public class EmployeeControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(20))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.Male.name()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(2000.0));
+
+        // Then
+    }
+
+    @Test
+    void should_update_employee_when_update_given_id() throws Exception {
+
+
+        // Given
+        String requestBody = "    {\n" +
+                "        \"age\": 21,\n" +
+                "        \"salary\": 8000.0\n" +
+                "    }";
+
+        // When
+        client.perform(MockMvcRequestBuilders.put("/employees/{id}", "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Sam1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(21))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.Male.name()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000.0));
+
 
         // Then
     }
