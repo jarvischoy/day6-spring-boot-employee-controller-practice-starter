@@ -28,6 +28,10 @@ public class Employee {
         return name;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public int getAge() {
         return age;
     }
