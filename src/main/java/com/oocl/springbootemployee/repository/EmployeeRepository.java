@@ -25,10 +25,10 @@ public class EmployeeRepository {
     }
 
     public void init() {
-        employees.add(new Employee(1L, "Lucy", 20, Gender.FEMALE, 8000));
-        employees.add(new Employee(2L, "Ben", 30, Gender.MALE, 2000));
-        employees.add(new Employee(3L, "Lily", 22, Gender.FEMALE, 2800));
-        employees.add(new Employee(4L, "Alice", 25, Gender.FEMALE, 3800));
+        employees.add(new Employee(1L, "Lucy", 20, Gender.FEMALE, 8000, 1L));
+        employees.add(new Employee(2L, "Ben", 30, Gender.MALE, 2000, 1L));
+        employees.add(new Employee(3L, "Lily", 22, Gender.FEMALE, 2800, 2L));
+        employees.add(new Employee(4L, "Alice", 25, Gender.FEMALE, 3800, 3L));
     }
 
     public List<Employee> getAllEmployees() {
@@ -80,4 +80,11 @@ public class EmployeeRepository {
                 .limit(pageSize)
                 .collect(Collectors.toList());
     }
+
+    public List<Employee> findByCompanyId(Long id) {
+        return employees.stream()
+                .filter(employee -> Objects.equals(employee.getCompanyId(), id))
+                .collect(Collectors.toList());
+    }
+
 }

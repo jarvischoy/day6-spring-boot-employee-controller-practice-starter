@@ -33,9 +33,6 @@ public class EmployeeControllerTest {
     private MockMvc client;
 
     @Autowired
-    private JacksonTester<Employee> json;
-
-    @Autowired
     private JacksonTester<List<Employee>> jsonList;
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -71,7 +68,9 @@ public class EmployeeControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Lucy"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(20))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.FEMALE.name()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.companyId").value(1L));
+        ;
     }
 
     @Test
@@ -92,7 +91,7 @@ public class EmployeeControllerTest {
     @Test
     void should_create_employee_when_create_employee_given_json() throws Exception {
         // Given
-        Employee newEmployee = new Employee(null, "Lulu", 23, Gender.FEMALE, 4000);
+        Employee newEmployee = new Employee(null, "Lulu", 23, Gender.FEMALE, 4000, 1L);
 
         // When
         client.perform(MockMvcRequestBuilders.post("/employees")
@@ -104,7 +103,9 @@ public class EmployeeControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(23))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.FEMALE.name()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(4000))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.companyId").value(1L));
+        ;
 
         List<Employee> employeesAfterDeletion = employeeRepository.getAllEmployees();
         assertEquals(5, employeesAfterDeletion.size());
@@ -114,7 +115,7 @@ public class EmployeeControllerTest {
     @Test
     void should_update_employee_when_update_given_id() throws Exception {
         // Given
-        Employee updatedEmployee = new Employee(1L, "Lucy", 21, Gender.FEMALE, 8000);
+        Employee updatedEmployee = new Employee(1L, "Lucy", 21, Gender.FEMALE, 8000, 1L);
 
         // When
         client.perform(MockMvcRequestBuilders.put("/employees/1")
@@ -125,7 +126,8 @@ public class EmployeeControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Lucy"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(21))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value(Gender.FEMALE.name()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.salary").value(8000))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.companyId").value(1L));
 
     }
 
@@ -142,12 +144,12 @@ public class EmployeeControllerTest {
     void should_return_employee_when_perform_get_given_page_number_and_size() throws Exception {
         // Given
         List<Employee> targetEmployee = new ArrayList<>();
-        targetEmployee.add(new Employee(3L, "Lily", 22, Gender.FEMALE, 2800));
-        targetEmployee.add(new Employee(4L, "Alice", 25, Gender.FEMALE, 3800));
+        targetEmployee.add(new Employee(3L, "Lily", 22, Gender.FEMALE, 2800, 2L));
+        targetEmployee.add(new Employee(4L, "Alice", 25, Gender.FEMALE, 3800, 3L));
         // When
         client.perform(MockMvcRequestBuilders.get("/employees")
-                .param("pageNumber", "2")
-                .param("pageSize", "2"))
+                        .param("pageNumber", "2")
+                        .param("pageSize", "2"))
                 // Then
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(2)))
